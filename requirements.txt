@@ -1,0 +1,5 @@
+requests
+fake_useragent
+2captcha-python
+loguru
+python-dotenv
