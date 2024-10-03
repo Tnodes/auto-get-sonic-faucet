@@ -66,6 +66,7 @@ def generate_headers() -> dict:
     platform_match = re.search(r'\([^;]+', user_agent)
     system_platform = platform_match.group(0)[1:] if platform_match else "Unknown"
     return {
+        "path": "/airdrop/{captcha_code}",
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
         "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
@@ -114,6 +115,19 @@ def banner() -> None:
     """
     print(art)
 
+def choose_network() -> str:
+    while True:
+        print("\nChoose the network:")
+        print("1. Devnet")
+        print("2. Testnet")
+        choice = input("Enter your choice (1 or 2): ")
+        if choice == '1':
+            return "devnet"
+        elif choice == '2':
+            return "testnet"
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
+
 def main() -> None:
     banner()
 
@@ -122,8 +136,15 @@ def main() -> None:
         logger.error("API key not found in environment variables")
         return
     
+    network = choose_network()
+    
     sitekey = '0x4AAAAAAAc6HG1RMG_8EHSC'
     url = 'https://faucet.sonic.game/'
+    
+    if network == "devnet":
+        api_base_url = "https://faucet-api.sonic.game/airdrop/"
+    else:  # testnet
+        api_base_url = "https://faucet-api-grid-1.sonic.game/airdrop/"
     
     proxies = load_lines('proxy.txt')
     wallets = load_lines('wallet.txt')
@@ -136,7 +157,7 @@ def main() -> None:
 
     for wallet in wallets:
         logger.info(f"Processing wallet: {wallet}")
-        api_url = f"https://faucet-api.sonic.game/airdrop/{wallet}/1/{{captcha_code}}"
+        api_url = f"{api_base_url}{wallet}/0.5/{{captcha_code}}"
         proxy = random.choice(proxies) if proxies else None
         captcha_code = solve_captcha(solver, sitekey, url, generate_fake_user_agent())
         
